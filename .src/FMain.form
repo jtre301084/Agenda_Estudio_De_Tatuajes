@@ -337,7 +337,7 @@
         MoveScaled(0,57,4,2)
       }
       { HBox15 HBox
-        MoveScaled(0,61,61,10)
+        MoveScaled(0,63,61,10)
         Expand = True
         { Label15 Label
           MoveScaled(2,0,14,3)

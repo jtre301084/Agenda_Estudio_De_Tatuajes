@@ -14,9 +14,39 @@ Public Sub cargar()
         t5.text = resul["cel"]
          t6.text = resul["dir"]
           t7.text = resul["ema"]
-           t8.text = resul["dep"]
-            t9.text = resul["deu"]
-             t10.text = resul["fec"]
+          '
+           ' DEPÓSITO
+                If Not IsNull(resul["dep"]) Then
+                  If resul["dep"] = 0 Then
+                    t8.Text = "0"
+                  Else
+                    t8.Text = Replace(Format(resul["dep"], "#,##0"), " ", ".")
+                  Endif
+                Else
+                  t8.Text = ""
+                Endif  
+          't8.text = resul["dep"]
+          
+            't9.text = resul["deu"]
+            
+            ' DEUDA
+                If Not IsNull(resul["deu"]) Then 
+                  If resul["deu"] = 0 Then
+                    t9.Text = "0"
+                  Else
+                    t9.Text = Replace(Format(resul["deu"], "#,##0"), " ", ".")
+                  Endif
+                Else
+                  t9.Text = ""
+                Endif
+            
+            If Not IsNull(resul["fec"]) Then
+                    t10.Text = Format(resul["fec"], "dd/mm/yyyy")
+                  Else
+                    t10.Text = ""
+                  Endif  
+                  
+            't10.text = resul["fec"]
               t11.text = resul["nota"]
                vlbid.value = resul.Index + 1
     
@@ -179,12 +209,47 @@ End
 
 Public Sub btnguardar_Click()
 
-   Dim m As Integer
+   
+    Dim m As Integer
+        Dim f As Date
+        Dim sF As String[]
+        Dim sNum As String
+        Dim v As Variant
+        Dim v2 As Variant
+        
     m = Message.Warning("¿Desea agregar un nuevo usuario?", "Si", "No")
       If m = 2 Then 
         'nada
-        Else 
-            mod.cnx.Exec("insert into Clientes ('id','nom','ape','ced','cel','dir','ema','dep','deu','fec','nota') values (&1,&2,&3,&4,&5,&6,&7,&8,&9,&{10},&{11})", Null, t2.text, t3.text, t4.text, t5.text, t6.text, t7.text, t8.text, t9.text, t10.text, t11.text)
+        Else
+          ' FECHA
+               sF = Split(Trim(t10.Text), "/")
+               If sF.Count = 3 Then
+                 f = Date(Val(sF[2]), Val(sF[1]), Val(sF[0]))
+               Else
+                 f = CDate(t10.Text)
+               Endif
+               f = f - Frac(f)
+
+               ' DEPÓSITO - Limpiar puntos para guardar limpio
+               sNum = Trim(t8.Text)
+               sNum = Replace(sNum, ".", "")      ' quitar puntos de miles
+               sNum = Replace(sNum, " ", "")      ' quitar espacios
+               sNum = Replace(sNum, Chr(160), "") ' quitar espacio no separable
+              'Dim v As Integer
+   
+               v = Val(sNum)
+               If IsNull(v) Then v = 0
+               
+               ' DEUDA - Limpiar puntos para guardar limpio
+               sNum = Trim(t9.Text)
+               sNum = Replace(sNum, ".", "")      ' quitar puntos de miles
+               sNum = Replace(sNum, " ", "")      ' quitar espacios
+               sNum = Replace(sNum, Chr(160), "") ' quitar espacio no separable
+               v2 = Val(sNum)
+               If IsNull(v2) Then v2 = 0  
+               
+          
+            mod.cnx.Exec("insert into Clientes ('id','nom','ape','ced','cel','dir','ema','dep','deu','fec','nota') values (&1,&2,&3,&4,&5,&6,&7,&8,&9,&{10},&{11})", Null, t2.text, t3.text, t4.text, t5.text, t6.text, t7.text, v, v2, f, t11.text)
       mod.cnx.Commit
     
       Message.Info("Guardado con ÉXITO")
@@ -193,6 +258,12 @@ Public Sub btnguardar_Click()
           resul.MoveLast
            cargar()
      Endif 
+     
+     btnborrar.Enabled = True
+      btnedit.Enabled = True
+        btnnuevo.Enabled = True
+        btnguardar.Enabled = False
+     
      
 End
 
@@ -217,16 +288,26 @@ Public Sub btnnuevo_Click()
              t10.text = ""
               t11.text = ""
               btnnuevo.Enabled = False  
+                btnborrar.Enabled = False
+                  btnedit.Enabled = False
+                  
                 btnguardar.Enabled = True
+                t2.SetFocus
+                
+                
                 
       
 End
 
 
 Public Sub btnedit_Click()
-
-  Dim i As Integer
-  Dim v As Variant
+      Dim f As Date
+       Dim i As Integer
+       Dim v As Variant
+       Dim v2 As Variant
+       Dim sF As String[]
+       Dim sNum As String  
+ 
   
     i = Message.Info("¿Desea editar el registro actual?")
       If i = 1 Then 
@@ -238,18 +319,36 @@ Public Sub btnedit_Click()
                   resul!cel = Val(Replace(t5.Text, "-", "")) 'aqui igual 
                     resul!dir = t6.Text
                       resul!ema = t7.text
-                      
-                      v = Val(t8.text)    ' la coma es el separador decimal
-                        If IsNull(v) Then v = 0
-                        resul!dep = v
-                        
-                      v = Val(t9.Text)
-                        If IsNull(v) Then v = 0
-                        resul!deu = v
+                      ' DEPÓSITO
+                           sNum = Trim(t8.Text)
+                           sNum = Replace(sNum, ".", "")
+                           sNum = Replace(sNum, " ", "")
+                           sNum = Replace(sNum, Chr(160), "")
+                           v = Val(sNum)
+                             If IsNull(v) Then v = 0
+                             resul!dep = v 
+                           ' DEUDA
+                           sNum = Trim(t9.Text)
+                           sNum = Replace(sNum, ".", "")
+                           sNum = Replace(sNum, " ", "")
+                           sNum = Replace(sNum, Chr(160), "")
+                           v2 = Val(sNum)
+                             If IsNull(v2) Then v2 = 0
+                             resul!deu = v2
 
-                            resul!fec = CDate(t10.Text)
-                              resul!nota = t11.Text
-                              
+                        ' Guardar fecha SOLO dd/mm/yyyy 
+                           sF = Split(Trim(t10.Text), "/")
+                           If sF.Count = 3 Then
+                             f = Date(Val(sF[2]), Val(sF[1]), Val(sF[0]))
+                           Else 
+                             f = CDate(t10.Text)
+                           Endif
+                           f = f - Frac(f)
+                           resul!fec = f
+
+                         ' resul!fec = CDate(t10.Text)
+                            resul!nota = t11.Text
+
                               resul.Update
                               mod.cnx.Commit
                               Message.Info("Edicion realizada con ÉXITO")
@@ -257,6 +356,8 @@ Public Sub btnedit_Click()
                               cargar()
         
       Endif
+                                                                                                                                          
+     
 
 End
 
@@ -309,23 +410,6 @@ Public Sub vlbid_GotFocus()
   vlbid.value = ""
 
 End
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
