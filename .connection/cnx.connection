@@ -1,0 +1,11 @@
+[Connection]
+Type="sqlite"
+Path="~/Documentos/Z_Agenda_Jack_Studio_Tattoo_10-08-2026"
+NoPassword=False
+RememberPassword=False
+IgnoreCharset=False
+DisplayMetadata=False
+RememberTemplate=False
+Database="DBclientes"
+Requests=[""]
+

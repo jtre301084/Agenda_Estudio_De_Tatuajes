@@ -1,0 +1,5 @@
+# Gambas Form File 3.0
+
+{ FrmReportes Form
+  MoveScaled(0,0,64,64)
+}

@@ -1,0 +1,64 @@
+' Gambas module file
+
+  Public cnx As Connection
+  
+  Public Sub copiarbase()
+  
+    If Exist(User.home &/ ".Jack_Sneider_Agenda/DBclientes") Then 
+        'si existe la base de datos ... no haga nada
+        Else 
+          Try Mkdir User.home &/ ".Jack_Sneider_Agenda"
+            Try Copy "DBclientes" To User.home &/ ".Jack_Sneider_Agenda/DBclientes"
+            
+    Endif
+  
+End
+
+Public Sub cerrar()
+  
+  cnx.Close
+  
+End
+
+Public Sub conectar()
+  
+  cnx = New Connection
+    cnx.Host = User.home &/ ".Jack_Sneider_Agenda"
+      cnx.type = "sqlite3"
+        cnx.name = "DBclientes"
+          
+        Try cnx.Open()
+         ' Message.Info("Conectado") ' eliminar esta linea despúes
+            If Error Then 
+              Message.Error("Error al conectar la base")
+                Print Error.Text
+                  Print Error.Where
+                    Print Error.Code
+                Else
+                  Return 
+                  
+               Endif
+                 Return 
+ 
+End
+
+Public Sub desconectar()
+  
+  cnx.Close
+  
+End
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

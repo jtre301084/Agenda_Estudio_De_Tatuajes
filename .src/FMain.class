@@ -1,0 +1,331 @@
+' Gambas class file
+
+Public resul As Result
+Public dDate As Date = Now
+
+   
+
+Public Sub cargar()
+
+    t1.text = resul["id"]
+     t2.text = resul["nom"]
+      t3.text = resul["ape"]
+       t4.Text = resul["ced"]
+        t5.text = resul["cel"]
+         t6.text = resul["dir"]
+          t7.text = resul["ema"]
+           t8.text = resul["dep"]
+            t9.text = resul["deu"]
+             t10.text = resul["fec"]
+              t11.text = resul["nota"]
+               vlbid.value = resul.Index + 1
+    
+End 
+
+
+Public Sub Button6_Click()
+
+  'resul = mod.cnx.Exec("select * from clientes order by id Asc")
+
+  Dim clik As Sound
+    clik = Sound.Load("pi.wav")
+      clik.volume = 75
+        clik.play
+        resul.MoveLast
+        cargar()
+
+End
+
+Public Sub Form_Open()
+  
+    
+    Settings.Read(Me)
+    
+    Me.text = "Agenda Clientes -- " & "   " & " Ventana Principal" 
+
+   Dim sonidointro As Sound
+    sonidointro = Sound.load("int.wav")
+     sonidointro.volume = 50
+      sonidointro.play
+       lblhora.Text = Format(dDate, "dddd dd/mm/yyyy")
+        lblmetodo.Text = "Metodo"
+          mod.copiarbase()
+          mod.conectar()
+          
+          resul = mod.cnx.Exec("select * from clientes order by id Asc")
+          
+    If resul.Available Then
+     cargar()
+     Endif 
+     btnguardar.Enabled = False
+     
+
+End                  
+
+Public Sub btnfirst_Click()
+
+  'resul = mod.cnx.Exec("select * from clientes order by id Asc")
+  Dim clik As Sound
+    clik = Sound.Load("pi.wav")
+      clik.volume = 90
+        clik.play
+   resul.MoveFirst    
+   cargar() 
+
+End
+
+Public Sub btnprevius_Click()
+
+  Dim clik As Sound
+  
+  'resul = mod.cnx.Exec("select * from clientes order by id Asc")
+  
+    clik = Sound.Load("pi.wav")
+      clik.volume = 90
+        clik.play
+        
+    resul.MovePrevious
+      If resul.Available = False Then 
+         resul.MoveFirst
+      Endif 
+            cargar()
+
+End
+
+Public Sub btnnext_Click()
+
+  Dim clik As Sound
+    clik = Sound.Load("pi.wav")
+      clik.volume = 90
+        clik.play
+         
+        resul.MoveNext
+        If resul.Available = False Then 
+          Resul.MoveLast
+        Endif
+ 
+       cargar()
+          
+          
+
+End
+
+Public Sub btncliente_Click()
+
+  Dim clik As Sound
+    clik = Sound.Load("plap.wav")
+      clik.volume = 50
+        clik.play
+        
+        Dim fichero As String 
+     
+    imgcli.Stretch = True
+  
+Dialog.Title = "Seleccione foto del Cliente"
+Dialog.Path = User.Home
+Dialog.Filter = ["*.jpg", "*.JPG", "*.png", "*.PNG"]
+If Not Dialog.OpenFile() Then
+   
+Endif
+imgcli.Picture = Picture[Dialog.Path]
+        
+        
+
+End
+
+Public Sub btnvoucher_Click()
+
+  Dim clik As Sound
+    clik = Sound.Load("plap.wav")
+      clik.volume = 50
+        clik.play
+        
+         Dim fichero As String 
+     
+    imgvou.Stretch = True
+  
+Dialog.Title = "Seleccione foto del Cliente"
+Dialog.Path = User.Home
+Dialog.Filter = ["*.jpg", "*.JPG", "*.png", "*.PNG"]
+If Not Dialog.OpenFile() Then
+   
+Endif
+imgvou.Picture = Picture[Dialog.Path]
+        
+
+End
+
+Public Sub btnlast_Click()
+
+  Dim clik As Sound
+    clik = Sound.Load("plap.wav")
+      clik.volume = 50
+        clik.play
+        
+        Dim fichero As String 
+     
+    imgdis.Stretch = True
+  
+Dialog.Title = "Seleccione foto del Cliente"
+Dialog.Path = User.Home
+Dialog.Filter = ["*.jpg", "*.JPG", "*.png", "*.PNG"]
+If Not Dialog.OpenFile() Then
+   
+Endif
+imgdis.Picture = Picture[Dialog.Path]
+        
+
+End
+
+Public Sub btnguardar_Click()
+
+   Dim m As Integer
+    m = Message.Warning("¿Desea agregar un nuevo usuario?", "Si", "No")
+      If m = 2 Then 
+        'nada
+        Else 
+            mod.cnx.Exec("insert into Clientes ('id','nom','ape','ced','cel','dir','ema','dep','deu','fec','nota') values (&1,&2,&3,&4,&5,&6,&7,&8,&9,&{10},&{11})", Null, t2.text, t3.text, t4.text, t5.text, t6.text, t7.text, t8.text, t9.text, t10.text, t11.text)
+      mod.cnx.Commit
+    
+      Message.Info("Guardado con ÉXITO")
+        lblmodo.text = "Modo Exploración"
+         resul = mod.cnx.Exec("SELECT * FROM clientes ORDER BY id ASC")
+          resul.MoveLast
+           cargar()
+     Endif 
+     
+End
+
+Public Sub Form_Close()
+
+  Settings.Write(Me) 
+
+End
+
+Public Sub btnnuevo_Click()
+
+  lblmodo.text = "Modo Agregar Usuario"
+    t1.text = ""
+     t2.text = ""
+      t3.text = ""
+       t4.Text = ""
+        t5.text = ""
+         t6.text = ""
+          t7.text = ""
+           t8.text = ""
+            t9.text = ""
+             t10.text = ""
+              t11.text = ""
+              btnnuevo.Enabled = False  
+                btnguardar.Enabled = True
+                
+      
+End
+
+
+Public Sub btnedit_Click()
+
+  Dim i As Integer
+  Dim v As Variant
+  
+    i = Message.Info("¿Desea editar el registro actual?")
+      If i = 1 Then 
+       resul = mod.cnx.Edit("clientes", "id = &1", t1.text)
+          resul!id = t1.Text
+            resul!nom = t2.text
+              resul!ape = t3.Text
+                resul!ced = Val(Replace(t4.Text, "-", ""))   '1-2-3 -> 123  para que admita guin o espacio
+                  resul!cel = Val(Replace(t5.Text, "-", "")) 'aqui igual 
+                    resul!dir = t6.Text
+                      resul!ema = t7.text
+                      
+                      v = Val(t8.text)    ' la coma es el separador decimal
+                        If IsNull(v) Then v = 0
+                        resul!dep = v
+                        
+                      v = Val(t9.Text)
+                        If IsNull(v) Then v = 0
+                        resul!deu = v
+
+                            resul!fec = CDate(t10.Text)
+                              resul!nota = t11.Text
+                              
+                              resul.Update
+                              mod.cnx.Commit
+                              Message.Info("Edicion realizada con ÉXITO")
+                              resul = mod.cnx.Exec("SELECT * FROM clientes ORDER BY id Asc")
+                              cargar()
+        
+      Endif
+
+End
+
+
+Public Sub vlbid_KeyPress()
+    Dim clik As Sound
+    
+  If Key.code = Key.Enter Or Key.code = Key.return Then 
+    
+    clik = Sound.Load("rap1.wav")
+      clik.volume = 50
+        clik.play
+   
+    If resul.MoveTo(vlbid.value - 1) = False Then 
+      cargar()
+      Else 
+        Message.Info("No existe el registro")
+    Endif 
+  Endif
+
+End
+
+Public Sub btnborrar_Click()
+
+  Dim m As Integer
+    m = Message.Warning("¿Desea ELIMINAR el registro actual?", "Si", "No")
+    If m = 2 Then 
+      Return 'pulso no no hace nada
+      Else 
+        mod.cnx.Exec("DELETE FROM clientes WHERE id = &1", t1.Text)
+          mod.cnx.Commit
+            
+            resul = mod.cnx.Exec("SELECT * FROM clientes ORDER BY id Asc")
+              If Resul.Available Then 
+                cargar()
+                Else 
+                  Message.Info("Registro eliminado con ÉXITO")
+              Endif
+        
+    Endif
+      
+      
+
+End
+
+
+
+Public Sub vlbid_GotFocus()
+
+  vlbid.value = ""
+
+End
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
