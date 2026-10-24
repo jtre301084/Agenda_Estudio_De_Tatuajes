@@ -1,8 +1,12 @@
 ' Gambas class file
 
-Public resul As Result
-Public dDate As Date = Now
-
+ Public resul As Result
+ Public dDate As Date = Now
+ Private bFotCli As Variant
+ Private bFotVou As Variant
+ Private bFotDis As Variant 
+ 
+ 
    
 
 Public Sub cargar()
@@ -25,10 +29,7 @@ Public Sub cargar()
                 Else
                   t8.Text = ""
                 Endif  
-          't8.text = resul["dep"]
-          
-            't9.text = resul["deu"]
-            
+
             ' DEUDA
                 If Not IsNull(resul["deu"]) Then 
                   If resul["deu"] = 0 Then
@@ -39,16 +40,28 @@ Public Sub cargar()
                 Else
                   t9.Text = ""
                 Endif
-            
+
             If Not IsNull(resul["fec"]) Then
                     t10.Text = Format(resul["fec"], "dd/mm/yyyy")
                   Else
                     t10.Text = ""
                   Endif  
-                  
-            't10.text = resul["fec"]
+
+
               t11.text = resul["nota"]
                vlbid.value = resul.Index + 1
+
+                ' FOTOS
+                imgcli.Picture = Null
+                imgvou.Picture = Null
+                imgdis.Picture = Null 
+                Try imgcli.Picture = Picture.Load(resul["fotcli"]) 
+                Try imgvou.Picture = Picture.Load(resul["fotvou"])
+                Try imgdis.Picture = Picture.Load(resul["fotdis"])
+                bFotCli = Null 
+                bFotVou = Null 
+                bFotDis = Null 
+
     
 End 
 
@@ -147,17 +160,18 @@ Public Sub btncliente_Click()
       clik.volume = 50
         clik.play
         
-        Dim fichero As String 
+       ' Dim fichero As String 
      
     imgcli.Stretch = True
   
-Dialog.Title = "Seleccione foto del Cliente"
-Dialog.Path = User.Home
-Dialog.Filter = ["*.jpg", "*.JPG", "*.png", "*.PNG"]
-If Not Dialog.OpenFile() Then
-   
-Endif
-imgcli.Picture = Picture[Dialog.Path]
+  Dialog.Title = "Seleccione foto del Cliente"
+    Dialog.Path = User.Home 
+      Dialog.Filter = ["*.jpg", "*.JPG", "*.jpeg", "*.JPEG", "*.png", "*.PNG"]
+      
+    If Dialog.OpenFile() Then
+         imgcli.Picture = Picture[Dialog.Path]
+           bFotCli = File.Load(Dialog.Path)
+     Endif  
         
         
 
@@ -174,13 +188,13 @@ Public Sub btnvoucher_Click()
      
     imgvou.Stretch = True
   
-Dialog.Title = "Seleccione foto del Cliente"
-Dialog.Path = User.Home
-Dialog.Filter = ["*.jpg", "*.JPG", "*.png", "*.PNG"]
-If Not Dialog.OpenFile() Then
-   
-Endif
-imgvou.Picture = Picture[Dialog.Path]
+  Dialog.Title = "Seleccione foto del Cliente"
+    Dialog.Path = User.Home
+      Dialog.Filter = ["*.jpg", "*.JPG", "*.jpeg", "*.JPEG", "*.png", "*.PNG"]
+    If Dialog.OpenFile() Then                                                           
+         imgvou.Picture = Picture[Dialog.Path]                                             
+         bFotVou = File.Load(Dialog.Path)                                                  
+    Endif 
         
 
 End
@@ -196,14 +210,13 @@ Public Sub btnlast_Click()
      
     imgdis.Stretch = True
   
-Dialog.Title = "Seleccione foto del Cliente"
-Dialog.Path = User.Home
-Dialog.Filter = ["*.jpg", "*.JPG", "*.png", "*.PNG"]
-If Not Dialog.OpenFile() Then
-   
-Endif
-imgdis.Picture = Picture[Dialog.Path]
-        
+  Dialog.Title = "Seleccione foto del Cliente"
+    Dialog.Path = User.Home
+      Dialog.Filter = ["*.jpg", "*.JPG", "*.jpeg", "*.JPEG", "*.png", "*.PNG"]
+  If Dialog.OpenFile() Then                                                           
+         imgdis.Picture = Picture[Dialog.Path]                                             
+         bFotDis = File.Load(Dialog.Path)                                                  
+  Endif  
 
 End
 
@@ -249,7 +262,7 @@ Public Sub btnguardar_Click()
                If IsNull(v2) Then v2 = 0  
                
           
-            mod.cnx.Exec("insert into Clientes ('id','nom','ape','ced','cel','dir','ema','dep','deu','fec','nota') values (&1,&2,&3,&4,&5,&6,&7,&8,&9,&{10},&{11})", Null, t2.text, t3.text, t4.text, t5.text, t6.text, t7.text, v, v2, f, t11.text)
+            mod.cnx.Exec("insert into Clientes ('id','nom','ape','ced','cel','dir','ema','dep','deu','fec','nota','fotcli','fotvou','fotdis') values (&1,&2,&3,&4,&5,&6,&7,&8,&9,&{10},&{11},&{12},&{13},&{14})", Null, t2.text, t3.text, t4.text, t5.text, t6.text, t7.text, v, v2, f, t11.text, bFotCli, bFotVou, bFotDis)
       mod.cnx.Commit
     
       Message.Info("Guardado con ÉXITO")
@@ -257,12 +270,15 @@ Public Sub btnguardar_Click()
          resul = mod.cnx.Exec("SELECT * FROM clientes ORDER BY id ASC")
           resul.MoveLast
            cargar()
+           bFotCli = Null
+           bFotVou = Null
+           bFotDis = Null
      Endif 
      
      btnborrar.Enabled = True
       btnedit.Enabled = True
         btnnuevo.Enabled = True
-        btnguardar.Enabled = False
+          btnguardar.Enabled = False
      
      
 End
@@ -287,6 +303,14 @@ Public Sub btnnuevo_Click()
             t9.text = ""
              t10.text = ""
               t11.text = ""
+              
+               imgcli.Picture = Null
+               imgvou.Picture = Null
+               imgdis.Picture = Null
+               bFotCli = Null
+               bFotVou = Null
+               bFotDis = Null
+               
               btnnuevo.Enabled = False  
                 btnborrar.Enabled = False
                   btnedit.Enabled = False
@@ -327,6 +351,7 @@ Public Sub btnedit_Click()
                            v = Val(sNum)
                              If IsNull(v) Then v = 0
                              resul!dep = v 
+                             
                            ' DEUDA
                            sNum = Trim(t9.Text)
                            sNum = Replace(sNum, ".", "")
@@ -348,12 +373,23 @@ Public Sub btnedit_Click()
 
                          ' resul!fec = CDate(t10.Text)
                             resul!nota = t11.Text
+                            
+                            ' FOTOS    
+                             If Not IsNull(bFotCli) Then resul!fotcli = bFotCli 
+                              If Not IsNull(bFotVou) Then resul!fotvou = bFotVou 
+                               If Not IsNull(bFotDis) Then resul!fotdis = bFotDis
 
                               resul.Update
-                              mod.cnx.Commit
+                                mod.cnx.Commit
+                              
                               Message.Info("Edicion realizada con ÉXITO")
+                              
+                               bFotCli = Null
+                                bFotVou = Null
+                                 bFotDis = Null 
+                                 
                               resul = mod.cnx.Exec("SELECT * FROM clientes ORDER BY id Asc")
-                              cargar()
+                               cargar()
         
       Endif
                                                                                                                                           
